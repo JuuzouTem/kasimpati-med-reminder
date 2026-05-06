@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getMessaging, isSupported as isMessagingSupported } from "firebase/messaging";
-import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { getMessaging, isSupported as isMessagingSupported, Messaging } from "firebase/messaging";
+import { getAnalytics, isSupported as isAnalyticsSupported, Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,13 +14,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase only once
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db: Firestore = getFirestore(app);
 
-const db = getFirestore(app);
-
-// Messaging and Analytics are only supported in the browser
-let messaging: any = null;
-let analytics: any = null;
+// Messaging and Analytics types
+let messaging: Messaging | null = null;
+let analytics: Analytics | null = null;
 
 if (typeof window !== "undefined") {
   // FCM Initialization
