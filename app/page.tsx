@@ -1,17 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import VisualAlert from "@/components/VisualAlert";
 import FlowerBackground from "@/components/FlowerBackground";
 import InstallPrompt from "@/components/InstallPrompt";
-import MedStatusCard from "@/components/MedStatusCard"; // Eklenen import
+import MedStatusCard from "@/components/MedStatusCard";
 import { useMedStore } from "@/lib/store";
 import { Plus, Trash2, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function Home() {
   const { schedules, addSchedule, removeSchedule, takenLogs, triggerAlert } = useMedStore();
   const [newTime, setNewTime] = useState("09:00");
-  const todayDate = new Date().toISOString().split("T")[0];
+  const [todayDate, setTodayDate] = useState("");
+
+  useEffect(() => {
+    // Vercel UTC kullanır, tarayıcı lokal saat. Bu yüzden client'ta almalıyız.
+    setTodayDate(new Date().toISOString().split("T")[0]);
+  },[]);
 
   return (
     <div className="flex-1 flex flex-col relative min-h-[100dvh]">
@@ -21,15 +26,14 @@ export default function Home() {
         <h1 className="text-4xl font-black bg-gradient-to-r from-chrysanthemum-purple to-chrysanthemum-pink bg-clip-text text-transparent drop-shadow-sm">
           Kasımpatı
         </h1>
-        <p className="text-gray-600 font-medium mt-2">Zarif & Sessiz Hatırlatıcı</p>
+        {/* & işareti &amp; olarak düzeltildi */}
+        <p className="text-gray-600 font-medium mt-2">Zarif &amp; Sessiz Hatırlatıcı</p>
       </header>
 
       <main className="flex-1 flex flex-col relative z-10 px-6 overflow-y-auto pb-24">
         
-        {/* YENİ: Günlük Özet Kartımız */}
         <MedStatusCard />
 
-        {/* Saat Ekleme Kartı */}
         <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <h2 className="text-lg font-bold text-chrysanthemum-purple mb-4 flex items-center gap-2">
             <Clock className="w-5 h-5" />
@@ -55,7 +59,8 @@ export default function Home() {
             {schedules.length === 0 ? (
               <p className="text-center text-gray-400 font-medium py-4">Henüz saat eklenmedi.</p>
             ) : (
-              schedules.map((time) => {
+              // Veri yüklenene kadar boş liste göster (Hydration için)
+              todayDate && schedules.map((time) => {
                 const isTaken = takenLogs[`${todayDate}_${time}`];
                 return (
                   <div key={time} className="flex items-center justify-between bg-white/80 p-4 rounded-2xl border border-white">
@@ -85,7 +90,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Test Butonu (Development için) */}
         <button 
           onClick={triggerAlert}
           className="text-sm font-bold text-chrysanthemum-purple/50 underline py-4 mt-4"

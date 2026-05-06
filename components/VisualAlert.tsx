@@ -12,12 +12,10 @@ export default function VisualAlert() {
   const [pendingTime, setPendingTime] = useState<string | null>(null);
 
   useEffect(() => {
-    // Hangi ilacın vakti geldi de alarm çalıyor onu bulalım
     if (isAlertActive) {
       const todayDate = new Date().toISOString().split("T")[0];
       const now = new Date();
       
-      // Geçmiş saatlere bak, hangisi alınmamışsa onu seç
       const pending = schedules.find(time => {
         if (takenLogs[`${todayDate}_${time}`]) return false;
         const [h, m] = time.split(':').map(Number);
@@ -33,10 +31,10 @@ export default function VisualAlert() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isAlertActive) {
-      // User gesture sorunu için try-catch (eğer hata verirse en azından ekran animasyonu devam eder)
-      try { vibrate([500, 200, 500]); } catch (e) {}
+      // Boş catch bloğu hatasını çözmek için console.debug eklendi
+      try { vibrate([500, 200, 500]); } catch (error) { console.debug("Vibration blocked", error); }
       interval = setInterval(() => {
-        try { vibrate([800, 300, 800, 300, 1000]); } catch (e) {}
+        try { vibrate([800, 300, 800, 300, 1000]); } catch (error) { console.debug("Vibration blocked", error); }
       }, 4000);
     } else {
       stopVibration();
@@ -49,7 +47,7 @@ export default function VisualAlert() {
       const todayDate = new Date().toISOString().split("T")[0];
       markAsTaken(`${todayDate}_${pendingTime}`);
     } else {
-      dismissAlert(); // Eğer test butonuna basılmışsa
+      dismissAlert();
     }
   };
 
@@ -75,7 +73,7 @@ export default function VisualAlert() {
             className="relative z-10 w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-[2rem] shadow-2xl p-8 flex flex-col items-center text-center border border-white"
           >
             <motion.div
-              animate={{ rotate:[0, -15, 15, -15, 15, 0] }}
+              animate={{ rotate: [0, -15, 15, -15, 15, 0] }}
               transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
               className="bg-gradient-to-br from-chrysanthemum-purple to-chrysanthemum-pink p-5 rounded-full mb-6 shadow-lg shadow-chrysanthemum-purple/30"
             >
