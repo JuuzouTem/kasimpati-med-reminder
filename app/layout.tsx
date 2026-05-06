@@ -4,7 +4,7 @@ import "./globals.css";
 import { CHRYSANTHEMUM_THEME } from "@/lib/theme";
 import ClientLogic from "@/components/ClientLogic";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets:["latin"] });
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   description: "Görsel odaklı, sessiz ilaç hatırlatıcısı.",
   manifest: "/manifest.json",
   appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
     title: "Kasımpatı",
+    statusBarStyle: "default",
+    // capable: true satırını kaldırdık çünkü artık next-pwa bunu otomatik/modern yolla yapıyor.
   },
 };
 

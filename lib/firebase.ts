@@ -13,28 +13,30 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase only once
-const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db: Firestore = getFirestore(app);
-
-// Messaging and Analytics types
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
 let messaging: Messaging | null = null;
 let analytics: Analytics | null = null;
 
-if (typeof window !== "undefined") {
-  // FCM Initialization
-  isMessagingSupported().then((supported) => {
-    if (supported) {
-      messaging = getMessaging(app);
-    }
-  });
+// SADECE projectId varsa başlat, yoksa çökmesini engelle!
+if (firebaseConfig.projectId) {
+  try {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    db = getFirestore(app);
 
-  // Analytics Initialization
-  isAnalyticsSupported().then((supported) => {
-    if (supported) {
-      analytics = getAnalytics(app);
+    if (typeof window !== "undefined") {
+      isMessagingSupported().then((supported) => {
+        if (supported && app) messaging = getMessaging(app);
+      });
+      isAnalyticsSupported().then((supported) => {
+        if (supported && app) analytics = getAnalytics(app);
+      });
     }
-  });
+  } catch (error) {
+    console.error("Firebase başlatma hatası:", error);
+  }
+} else {
+  console.warn("Firebase ayarları eksik. Uygulama sadece yerel (local) modda çalışıyor.");
 }
 
 export { app, db, messaging, analytics };
