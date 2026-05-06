@@ -2,37 +2,45 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface MedState {
-  isTaken: boolean;
+  schedules: string[]; // Örn:["09:00", "20:30"]
   isAlertActive: boolean;
-  lastTakenDate: string | null; // "YYYY-MM-DD"
-  lastAlertTime: number | null; // Zaman damgası (Timestamp)
-  markAsTaken: () => void;
+  takenLogs: Record<string, boolean>; // "2024-05-12_09:00": true
+  lastAlertTime: number | null;
+  addSchedule: (time: string) => void;
+  removeSchedule: (time: string) => void;
+  markAsTaken: (timeKey: string) => void;
   triggerAlert: () => void;
   dismissAlert: () => void;
-  resetDailyStatus: () => void;
 }
 
 export const useMedStore = create<MedState>()(
   persist(
     (set) => ({
-      isTaken: false,
+      schedules:[],
       isAlertActive: false,
-      lastTakenDate: null,
+      takenLogs: {},
       lastAlertTime: null,
 
-      markAsTaken: () => {
-        const today = new Date().toISOString().split("T")[0];
-        set({ isTaken: true, isAlertActive: false, lastTakenDate: today, lastAlertTime: null });
-      },
+      addSchedule: (time) => set((state) => {
+        if (!state.schedules.includes(time)) {
+          return { schedules: [...state.schedules, time].sort() };
+        }
+        return state;
+      }),
+
+      removeSchedule: (time) => set((state) => ({
+        schedules: state.schedules.filter(t => t !== time)
+      })),
+
+      markAsTaken: (timeKey) => set((state) => ({
+        takenLogs: { ...state.takenLogs, [timeKey]: true },
+        isAlertActive: false
+      })),
 
       triggerAlert: () => set({ isAlertActive: true, lastAlertTime: Date.now() }),
       
       dismissAlert: () => set({ isAlertActive: false }),
-
-      resetDailyStatus: () => set({ isTaken: false, isAlertActive: false, lastAlertTime: null }),
     }),
-    {
-      name: "med-reminder-storage",
-    }
+    { name: "med-reminder-advanced" }
   )
 );

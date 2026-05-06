@@ -1,42 +1,47 @@
 "use client";
 
 import { useMedStore } from "@/lib/store";
-import { CheckCircle2, AlertCircle, Pill } from "lucide-react";
+import { CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function MedStatusCard() {
-  const { isTaken, markAsTaken, lastTakenDate } = useMedStore();
+  const { schedules, takenLogs } = useMedStore();
+  const[todayDate, setTodayDate] = useState("");
+
+  // Hydration hatasını önlemek için tarihi client-side'da alıyoruz
+  useEffect(() => {
+    setTodayDate(new Date().toISOString().split("T")[0]);
+  },[]);
+
+  if (!todayDate) return null;
+
+  // Matematiksel hesaplamalar
+  const totalMeds = schedules.length;
+  const takenMeds = schedules.filter(time => takenLogs[`${todayDate}_${time}`]).length;
+  const allTaken = totalMeds > 0 && totalMeds === takenMeds;
 
   return (
-    <div className="relative z-10 w-full max-w-md mx-auto mt-12 px-6">
-      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 shadow-xl flex flex-col items-center text-center">
-        {isTaken ? (
-          <>
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-              <CheckCircle2 className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Harika!</h2>
-            <p className="text-gray-600 font-medium">
-              Bugünkü ilacını aldın. <br />
-              <span className="text-sm text-gray-400">Son Alınma: {lastTakenDate}</span>
-            </p>
-          </>
+    <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between mb-6">
+      <div>
+        <h2 className="text-xl font-bold text-gray-800">Günlük İlerleme</h2>
+        <p className="text-gray-600 font-medium text-sm mt-1">
+          {totalMeds === 0 
+            ? "Henüz saat eklemedin." 
+            : allTaken 
+              ? "Harika! Bugünkü tüm ilaçlarını aldın." 
+              : `${totalMeds} ilaçtan ${takenMeds} tanesi alındı.`}
+        </p>
+      </div>
+      
+      <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${
+        totalMeds === 0 ? "bg-blue-100" : allTaken ? "bg-green-100" : "bg-amber-100"
+      }`}>
+        {totalMeds === 0 ? (
+          <Info className="w-8 h-8 text-blue-500" />
+        ) : allTaken ? (
+          <CheckCircle2 className="w-8 h-8 text-green-500" />
         ) : (
-          <>
-            <div className="w-20 h-20 bg-chrysanthemum-light/30 rounded-full flex items-center justify-center mb-6">
-              <AlertCircle className="w-10 h-10 text-chrysanthemum-purple" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Bekliyor</h2>
-            <p className="text-gray-600 font-medium mb-8">
-              Bugünkü ilacını henüz almadın.
-            </p>
-            <button
-              onClick={markAsTaken}
-              className="w-full py-4 px-6 bg-chrysanthemum-purple text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform"
-            >
-              <Pill className="w-6 h-6" />
-              İlacımı Aldım
-            </button>
-          </>
+          <AlertCircle className="w-8 h-8 text-amber-500" />
         )}
       </div>
     </div>
